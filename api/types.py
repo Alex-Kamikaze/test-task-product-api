@@ -38,6 +38,6 @@ class ProductMapper(ModelMapper):
         return ProductModel(product_id = product.product_id, product_name = product.product_name, product_description = product.product_description, product_price = product.product_price, product_category_id = product.product_category)
     
     def into_db_model(product_model: ProductModel) -> Product:
-        return Product(product_name = product_model.product_name, product_description = product_model.product_description, product_price = product_model.product_price,product_category = product_model.product_category_id)
+        return Product(product_id = product_model.product_id, product_name = product_model.product_name, product_description = product_model.product_description, product_price = product_model.product_price,product_category = product_model.product_category_id)
 
     
