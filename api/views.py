@@ -3,7 +3,7 @@ import uuid
 
 from typing import List
 
-from fastapi import FastAPI, Request, Response, Depends, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from api.models import *
@@ -107,3 +107,26 @@ async def update_product(product_info: ProductModel):
     session.add(product_to_update)
     session.commit()
     return { "status": "OK" }
+
+@app.patch("/categories/update")
+async def update_category(category: CategoryModel):
+    category_to_update = session.query(Category).filter_by(category_id = category.category_id).first()
+
+    if category_to_update is None:
+        raise HTTPException(404, detail = f"Категория с ID {category.category_id} не найдена!")
+    
+    category_to_update.category_id = category.category_id
+    category_to_update.category_name = category.category_name
+
+    session.add(category_to_update)
+    session.commit()
+    
+    return { "status": "OK" }
+
+@app.get("/products/search")
+async def search_product_by_name(name: str):
+    products = session.query(Product).filter(Product.product_name.like(f"%{name}%")).all()
+    if products is None:
+        return []
+    
+    return [ProductMapper.from_db_model(product) for product in products]
