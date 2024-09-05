@@ -11,6 +11,7 @@ class Category(Base):
     __tablename__ = "categories"
     category_id = Column(Integer, primary_key=True)
     category_name = Column(String, nullable=False)
+    products = relationship("Product", backref="categories")
 
     def __str__(self):
         return self.category_name
@@ -18,8 +19,8 @@ class Category(Base):
 class User(Base):
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True)
-    user_login = Column(String, nullable=False)
-    user_password = Column(String, nullable=False, unique = True)
+    user_login = Column(String, nullable=False, unique = True)
+    user_password = Column(String, nullable=False)
 
     def __str__(self):
         return f"{self.user_id}:{self.user_login}"
@@ -31,8 +32,7 @@ class Product(Base):
     product_name = Column(String, nullable = False, unique = True)
     product_description = Column(String, nullable = True)
     product_price = Column(Integer, default = 0)
-    product_category = Column(Integer, ForeignKey("categories.category_id"))
-    product_date_of_addition = Column(DateTime, nullable = True)
+    product_category = Column(Integer, ForeignKey("categories.category_id", ondelete="CASCADE"))
     category = relationship("Category", back_populates = "products")
 
 session_meta = sessionmaker(autoflush=False, bind=db)
