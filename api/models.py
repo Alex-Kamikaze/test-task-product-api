@@ -8,6 +8,7 @@ db = create_engine('sqlite:///products.db')
 Base.metadata.bind = db
 
 class Category(Base):
+    """ Категории продуктов """
     __tablename__ = "categories"
     category_id = Column(Integer, primary_key=True)
     category_name = Column(String, nullable=False)
@@ -17,6 +18,7 @@ class Category(Base):
         return self.category_name
     
 class User(Base):
+    """ Пользователи API. Авторизация нужна для изменения данных в БД """
     __tablename__ = "users"
     user_id = Column(Integer, primary_key=True)
     user_login = Column(String, nullable=False, unique = True)
@@ -27,6 +29,7 @@ class User(Base):
 
 
 class Product(Base):
+    """ Продукты """
     __tablename__ = "products"
     product_id = Column(Integer, primary_key=True)
     product_name = Column(String, nullable = False, unique = True)

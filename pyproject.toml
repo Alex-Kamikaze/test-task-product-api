@@ -15,7 +15,7 @@ uvicorn = "^0.30.6"
 python-multipart = "^0.0.9"
 
 [tool.poetry.scripts]
-start = "api.main:start"
+start = "gunicorn api.views:start --reload"
 
 
 [build-system]

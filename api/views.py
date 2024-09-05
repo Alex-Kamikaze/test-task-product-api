@@ -18,11 +18,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "token")
 
 @app.exception_handler(Exception)
 async def handle_exception(req: Request, exc: Exception):
+    """ Логирование возникших ошибок в процессе работы сервера """
     logger.error(str(exc))
 
 
 @app.post("/token")
 async def handle_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    """ Авторизация в API с помощью OAuth2 """
     user_info = session.query(User).filter_by(user_login = form_data.username).first()
     if user_info is None:
         raise HTTPException(400, detail = f"Пользователя с логином {form_data.username} не существует!")
@@ -35,6 +37,7 @@ async def handle_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.get("/categories/all")
 async def get_all_categories() -> List[CategoryModel]:
+    """ Получение списка всех категорий """
     categories = session.query(Category).all()
     if categories is None:
         return []
@@ -42,6 +45,7 @@ async def get_all_categories() -> List[CategoryModel]:
 
 @app.get("/products/all")
 async def get_all_products() -> List[ProductModel]:
+    """ Получение списка всех продуктов """
     products = session.query(Product).all()
     if products is None:
         return []
@@ -50,6 +54,7 @@ async def get_all_products() -> List[ProductModel]:
 
 @app.post("/users/register")
 async def register_new_user(user_info: UserRegistrationModel):
+    """ Регистрация новых пользователей """
     if session.query(User).filter_by(user_login = user_info.user_login).first() is not None:
         raise HTTPException(400, detail = f"Пользователь с логином {user_info.user_login} уже существует!")
     user_hashed_password = PasswordSecurity.hash_password(user_info.user_password)
@@ -60,12 +65,14 @@ async def register_new_user(user_info: UserRegistrationModel):
 
 @app.post("/products/add")
 async def add_new_product(product: ProductModel, token: str = Depends(oauth2_scheme)):
+    """ Добавление новых продуктов в БД """
     session.add(ProductMapper.into_db_model(product))
     session.commit()
     return { "status": "OK" }
 
 @app.delete("/products/delete")
 async def delete_product(product_id: int, token: str = Depends(oauth2_scheme)):
+    """ Удаление продукта из БД """
     product_to_delete = session.query(Product).filter_by(product_id=product_id).first()
     if product_to_delete is None:
         raise HTTPException(404, detail = f"Продукта с ID {product_id} не существует!")
@@ -75,6 +82,7 @@ async def delete_product(product_id: int, token: str = Depends(oauth2_scheme)):
 
 @app.delete("/categories/delete")
 async def delete_category(category_id: int, token: str = Depends(oauth2_scheme)):
+    """ Удаление категории из БД """
     category_to_delete = session.query(Category).filter_by(category_id=category_id).first()
     if category_to_delete is None:
         raise HTTPException(404, detail = f"Категория с ID {category_id} не найдена!")
@@ -85,6 +93,7 @@ async def delete_category(category_id: int, token: str = Depends(oauth2_scheme))
 
 @app.get("/products/get_by_category")
 async def get_products_by_category(category_id: int) -> List[ProductModel]:
+    """ Получение продуктов по конкретной категории """
     products = session.query(Product).filter_by(product_category = category_id).all()
     if products is None:
         return []
@@ -93,6 +102,7 @@ async def get_products_by_category(category_id: int) -> List[ProductModel]:
 
 @app.patch("/products/update")
 async def update_product(product_info: ProductModel):
+    """ Обновление продуктов """
     if product_info.product_id is None:
         raise HTTPException(400, detail = "Невозможно получить информацию о продукте без указания ID!")
     
@@ -110,6 +120,7 @@ async def update_product(product_info: ProductModel):
 
 @app.patch("/categories/update")
 async def update_category(category: CategoryModel):
+    """ Обновление категорий """
     category_to_update = session.query(Category).filter_by(category_id = category.category_id).first()
 
     if category_to_update is None:
@@ -125,6 +136,7 @@ async def update_category(category: CategoryModel):
 
 @app.get("/products/search")
 async def search_product_by_name(name: str):
+    """ Поиск продуктов по имени """
     products = session.query(Product).filter(Product.product_name.like(f"%{name}%")).all()
     if products is None:
         return []
